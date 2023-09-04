@@ -1,4 +1,5 @@
 const express = require("express")
+const jwt = require("jsonwebtoken");
 //import express from "express";
 const app = express()
 const PORT = 805;
@@ -10,8 +11,8 @@ var cors = require("cors");
 //const { default: AddExpense } = require('../frontend/src/Components/AddExpense');
 
 app.use(cors());
-
-
+const generateToken = require("./config/generateToken")
+const protect = require ('./Middleware/Protect')
 
 var con = mysql.createConnection({
     host : "localhost",
@@ -77,12 +78,52 @@ app.post('/user/signup', (req,res) =>{
     })
 });
 
+app.post('/user/signin', (req,res)=>{
+  const {email, password} = req.body;
+ 
+  console.log(email,password)
+  var sql = `SELECT * from signup where email = '${email}'`;
 
-app.post('/user/addexpense', (req,res)=>{
+  con.connect((error)=>{
+    if(error) {
+      throw error
+    };
+
+
+    con.query(sql, (err,result)=>{
+      if(err){
+        throw err;
+      }
+      console.log(result);
+
+      if(result.length==0){
+        res.status(201).json({
+          error : "User does not exist"
+        })
+      }
+      else if(result[0].password==password){
+        res.status(201).json({
+          name : result[0].name,
+          phone : result[0].phone,
+          email : result[0].email,
+          token : generateToken(result[0].email),
+        });
+
+      } 
+
+      
+      
+
+    })
+
+  })
+})
+
+app.post('/user/addexpense',protect, (req,res)=>{
         console.log('I am inside the server');
 
         const { description, price, category, notes, date} = req.body;
-        var sq2 = `INSERT INTO addexpense (description,price,category,notes,date) VALUES("${description}", "${price}","${category}", "${notes}", "${date}")`;
+        var sq2 = `INSERT INTO addexpense (email,description,price,category,notes,date) VALUES("${req.myemail}","${description}", "${price}","${category}", "${notes}", "${date}")`;
 
         con.connect(function (err) {
       if (err) throw err;
@@ -105,8 +146,8 @@ app.post('/user/addexpense', (req,res)=>{
 
 });
 
-app.get('/user/getexpenses', (req,res)=>{
-    var sql = `SELECT * from addexpense`;
+app.get('/user/getexpenses',protect, (req,res)=>{
+    var sql = `SELECT * from addexpense where email = "${req.myemail}"`;
 
     con.connect(function(err){
       if (err) throw err;
@@ -163,6 +204,28 @@ app.get('/user/categoryexpense', (req,res)=>{
         });
     })
 })
+
+
+app.get('/my/tracker' , (req,res)=>{
+
+const {id} = req.query
+console.log(id)
+  var sql = `SELECT * FROM addexpense WHERE id = ${id}`;
+
+  con.connect(function (err) {
+    if (err) throw err;
+
+    con.query(sql, function (err, result) {
+     
+      res.status(201).json({
+        "data": result,
+      });
+
+
+    });
+  });
+})
+
 
 
 
