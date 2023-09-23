@@ -17,15 +17,11 @@ const protect = require("./Middleware/Protect");
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "root",
+  password: "rootroot",
   database: "expense",
-  port: 3307,
+  port: 3306,
 });
 
-con.connect(function (err) {
-  if (err) throw err;
-  console.log("Database is Connected");
-});
 
 app.post("/user/signup", (req, res) => {
   console.log("i am inside server");
@@ -52,10 +48,6 @@ app.post("/user/signup", (req, res) => {
     //         message: "Unsuccessful"
     //     })
     //   }
-  });
-
-  res.status(201).json({
-    message: "signup successful",
   });
 });
 
@@ -127,35 +119,49 @@ app.get("/user/getexpenses", protect, (req, res) => {
   });
 });
 
-app.get("/user/totalexpense",protect, (req, res) => {
-  var sql = `SELECT price FROM addexpense`;
+app.get("/user/totalexpense", protect, (req, res) => {
+  var sql = `SELECT price FROM addexpense where email = '${req.myemail}'`;
   con.connect(function (err) {
     if (err) throw err;
 
     con.query(sql, function (err, result) {
-      let sum = 0;
-      for (let i = 0; i < result.length; i++) {
-        sum += parseInt(result[i].price);
+      if (result.length == 0) {
+        res.status(201).json({
+          totalexpense: 0,
+        });
+      } else {
+        let sum = 0;
+        for (let i = 0; i < result.length; i++) {
+          sum += parseInt(result[i].price);
+        }
+        console.log(sum);
+        res.status(201).json({
+          totalexpense: sum,
+        });
       }
-      console.log(sum);
-      res.status(201).json({
-        totalexpense: sum,
-      });
     });
   });
 });
 
-app.get("/user/categoryexpense", protect,(req, res) => {
-  var sql = `SELECT category, SUM(price) FROM addexpense GROUP BY category`;
+app.get("/user/categoryexpense", protect, (req, res) => {
+ // var sql = `SELECT category, SUM(price) FROM addexpense GROUP BY category where email = '${req.myemail}'`;
+  var sql = `SELECT category, SUM(price) FROM addexpense WHERE email = '${req.myemail}' GROUP BY category`;
+
 
   con.connect(function (err) {
     if (err) throw err;
 
     con.query(sql, function (err, result) {
-      Number.parseInt(result);
-      res.status(201).json({
-        categoryexpense: result,
-      });
+      if (result.length == 0) {
+        res.status(201).json({
+          categoryexpense: 0,
+        });
+      } else {
+        Number.parseInt(result);
+        res.status(201).json({
+          categoryexpense: result,
+        });
+      }
     });
   });
 });
