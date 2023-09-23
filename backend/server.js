@@ -1,9 +1,9 @@
-const express = require("express")
+const express = require("express");
 const jwt = require("jsonwebtoken");
 //import express from "express";
-const app = express()
+const app = express();
 const PORT = 805;
-const mysql = require("mysql2");    //to put the install mysql functionalities in a variable
+const mysql = require("mysql2"); //to put the install mysql functionalities in a variable
 //import mysql from "mysql2";
 app.use(express.json());
 var cors = require("cors");
@@ -11,229 +11,171 @@ var cors = require("cors");
 //const { default: AddExpense } = require('../frontend/src/Components/AddExpense');
 
 app.use(cors());
-const generateToken = require("./config/generateToken")
-const protect = require ('./Middleware/Protect')
+const generateToken = require("./config/generateToken");
+const protect = require("./Middleware/Protect");
 
 var con = mysql.createConnection({
-    host : "localhost",
-    user : "root",
-    password : "root",
-    database : "expense",
-    port :3307,
+  host: "localhost",
+  user: "root",
+  password: "root",
+  database: "expense",
+  port: 3307,
 });
 
-con.connect(function(err){
-    if(err) throw err;
+con.connect(function (err) {
+  if (err) throw err;
+  console.log("Database is Connected");
+});
+
+app.post("/user/signup", (req, res) => {
+  console.log("i am inside server");
+
+  const { name, phone, email, password } = req.body;
+
+  var sql = `INSERT INTO signup (name,phone,email,password) VALUES ("${name}","${phone}", "${email}", "${password}")`;
+
+  con.connect(function (err) {
+    if (err) throw err;
     console.log("Database is Connected");
-});
 
-
-
-app.post('/user/signup', (req,res) =>{
-    console.log("i am inside server")
-    
-    
-    const {name,phone,email,password} = req.body;
-
-    var sql = `INSERT INTO signup (name,phone,email,password) VALUES ("${name}","${phone}", "${email}", "${password}")`;
-
-    con.connect(function (err) {
+    con.query(sql, function (err, result) {
       if (err) throw err;
-      console.log("Database is Connected");
+      console.log("1 record inserted");
 
-      con.query(sql, function (err, result) {
-          if (err) throw err;
-          console.log("1 record inserted");
-
-
-          res.status(201).json({
-            message: "Successful"
-          })
+      res.status(201).json({
+        message: "Successful",
       });
-
-      
-    
+    });
 
     //   else{
     //     res.status(201).json({
     //         message: "Unsuccessful"
     //     })
     //   }
+  });
 
-
-
-
-
-
-
-    });
-
-
-
-
-
-    
-    res.status(201).json({
-        'message': 'signup successful'
-    })
+  res.status(201).json({
+    message: "signup successful",
+  });
 });
 
-app.post('/user/signin', (req,res)=>{
-  const {email, password} = req.body;
- 
-  console.log(email,password)
+app.post("/user/signin", (req, res) => {
+  const { email, password } = req.body;
+
+  console.log(email, password);
   var sql = `SELECT * from signup where email = '${email}'`;
 
-  con.connect((error)=>{
-    if(error) {
-      throw error
-    };
+  con.connect((error) => {
+    if (error) {
+      throw error;
+    }
 
-
-    con.query(sql, (err,result)=>{
-      if(err){
+    con.query(sql, (err, result) => {
+      if (err) {
         throw err;
       }
       console.log(result);
 
-      if(result.length==0){
+      if (result.length == 0) {
         res.status(201).json({
-          error : "User does not exist"
-        })
-      }
-      else if(result[0].password==password){
-        res.status(201).json({
-          name : result[0].name,
-          phone : result[0].phone,
-          email : result[0].email,
-          token : generateToken(result[0].email),
+          error: "User does not exist",
         });
-
-      } 
-
-      
-      
-
-    })
-
-  })
-})
-
-app.post('/user/addexpense',protect, (req,res)=>{
-        console.log('I am inside the server');
-
-        const { description, price, category, notes, date} = req.body;
-        var sq2 = `INSERT INTO addexpense (email,description,price,category,notes,date) VALUES("${req.myemail}","${description}", "${price}","${category}", "${notes}", "${date}")`;
-
-        con.connect(function (err) {
-      if (err) throw err;
-      console.log("Database is Connected");
-
-      con.query(sq2, function (err, result) {
-          if (err) throw err;
-          console.log("1 record inserted");
-
-
-          res.status(201).json({
-            message: "Successful"
-          })
-
-
-      });
-    
-
- });
-
+      } else if (result[0].password == password) {
+        res.status(201).json({
+          name: result[0].name,
+          phone: result[0].phone,
+          email: result[0].email,
+          token: generateToken(result[0].email),
+        });
+      }
+    });
+  });
 });
 
-app.get('/user/getexpenses',protect, (req,res)=>{
-    var sql = `SELECT * from addexpense where email = "${req.myemail}"`;
+app.post("/user/addexpense", protect, (req, res) => {
+  console.log("I am inside the server");
 
-    con.connect(function(err){
+  const { description, price, category, notes, date } = req.body;
+  var sq2 = `INSERT INTO addexpense (email,description,price,category,notes,date) VALUES("${req.myemail}","${description}", "${price}","${category}", "${notes}", "${date}")`;
+
+  con.connect(function (err) {
+    if (err) throw err;
+    console.log("Database is Connected");
+
+    con.query(sq2, function (err, result) {
       if (err) throw err;
+      console.log("1 record inserted");
 
-      con.query(sql,function(err,result) {
-         res.status(201).json({
-            result
-         })
-      })
+      res.status(201).json({
+        message: "Successful",
+      });
+    });
+  });
+});
 
-    })
+app.get("/user/getexpenses", protect, (req, res) => {
+  var sql = `SELECT * from addexpense where email = "${req.myemail}"`;
 
-    
+  con.connect(function (err) {
+    if (err) throw err;
 
-})
+    con.query(sql, function (err, result) {
+      res.status(201).json({
+        result,
+      });
+    });
+  });
+});
 
-app.get('/user/totalexpense', (req,res)=> {
-     var sql = `SELECT price FROM addexpense`
-      con.connect(function(err){
-      if (err) throw err;
-          
-      con.query(sql,function(err,result) {
-          
-           let sum = 0;
-        for(let i = 0; i<result.length;i++){
-             sum+=parseInt(result[i].price);
-           
-        
-        }
-           console.log(sum);
-         res.status(201).json({
-            "totalexpense" : sum
-         })
-      })
+app.get("/user/totalexpense",protect, (req, res) => {
+  var sql = `SELECT price FROM addexpense`;
+  con.connect(function (err) {
+    if (err) throw err;
 
-})
+    con.query(sql, function (err, result) {
+      let sum = 0;
+      for (let i = 0; i < result.length; i++) {
+        sum += parseInt(result[i].price);
+      }
+      console.log(sum);
+      res.status(201).json({
+        totalexpense: sum,
+      });
+    });
+  });
+});
 
-})
+app.get("/user/categoryexpense", protect,(req, res) => {
+  var sql = `SELECT category, SUM(price) FROM addexpense GROUP BY category`;
 
+  con.connect(function (err) {
+    if (err) throw err;
 
+    con.query(sql, function (err, result) {
+      Number.parseInt(result);
+      res.status(201).json({
+        categoryexpense: result,
+      });
+    });
+  });
+});
 
-app.get('/user/categoryexpense', (req,res)=>{
-    var sql =`SELECT category, SUM(price) FROM addexpense GROUP BY category`;
-   
-
-    con.connect(function(err){
-        if  (err) throw err;
-
-        con.query(sql, function (err, result) {
-            Number.parseInt(result)
-          res.status(201).json({
-            "categoryexpense" : result
-          });
-        });
-    })
-})
-
-
-app.get('/my/tracker' , (req,res)=>{
-
-const {id} = req.query
-console.log(id)
+app.get("/my/tracker", protect, (req, res) => {
+  const { id } = req.query;
+  console.log(id);
   var sql = `SELECT * FROM addexpense WHERE id = ${id}`;
 
   con.connect(function (err) {
     if (err) throw err;
 
     con.query(sql, function (err, result) {
-     
       res.status(201).json({
-        "data": result,
+        data: result,
       });
-
-
     });
   });
-})
+});
 
-
-
-
-
-
-
-
-
-app.listen(PORT, ()=>{
-    console.log("the server is running on port ", PORT)
+app.listen(PORT, () => {
+  console.log("the server is running on port ", PORT);
 });

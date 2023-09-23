@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken')
 
 const protect = (req,res,next) =>{
    console.log("WE are in protect middleware")
+   console.log(req.headers.token);
 if(!req.headers.token){
     res.status(400).json({
         error : "Please login first"
