@@ -19,7 +19,7 @@ var con = mysql.createConnection({
   user: "root",
   password: "rootroot",
   database: "expense",
-  port: 3306,
+  port: 3306, 
 });
 
 
