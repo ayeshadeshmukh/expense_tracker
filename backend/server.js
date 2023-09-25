@@ -17,9 +17,9 @@ const protect = require("./Middleware/Protect");
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "root",
+  password: "rootroot",
   database: "expense",
-  port: 3307,
+  port: 3306,
 });
 
 
