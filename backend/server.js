@@ -87,8 +87,8 @@ app.post("/user/signin", (req, res) => {
 app.post("/user/addexpense", protect, (req, res) => {
   console.log("I am inside the server");
 
-  const { description, price, category, notes, date } = req.body;
-  var sq2 = `INSERT INTO addexpense (email,description,price,category,notes,date) VALUES("${req.myemail}","${description}", "${price}","${category}", "${notes}", "${date}")`;
+  const { description, price, category, notes, date,month,year } = req.body;
+  var sq2 = `INSERT INTO addexpense (email,description,price,category,notes,date,month,year) VALUES("${req.myemail}","${description}", "${price}","${category}", "${notes}", "${date}", "${month}", "${year}")`;
 
   con.connect(function (err) {
     if (err) throw err;
@@ -106,7 +106,9 @@ app.post("/user/addexpense", protect, (req, res) => {
 });
 
 app.get("/user/getexpenses", protect, (req, res) => {
-  var sql = `SELECT * from addexpense where email = "${req.myemail}"`;
+  var {month,year} = req.query;
+  console.log(month,year);
+  var sql = `SELECT * from addexpense where email = "${req.myemail}" AND month = "${month}" AND year = "${year}"`;
 
   con.connect(function (err) {
     if (err) throw err;
@@ -120,7 +122,9 @@ app.get("/user/getexpenses", protect, (req, res) => {
 });
 
 app.get("/user/totalexpense", protect, (req, res) => {
-  var sql = `SELECT price FROM addexpense where email = '${req.myemail}'`;
+   var {month,year} = req.query;
+
+  var sql = `SELECT price FROM addexpense where email = '${req.myemail}'AND '${month}' AND '${year}'`;
   con.connect(function (err) {
     if (err) throw err;
 
@@ -144,8 +148,10 @@ app.get("/user/totalexpense", protect, (req, res) => {
 });
 
 app.get("/user/categoryexpense", protect, (req, res) => {
+   var {month,year} = req.query;
+
  // var sql = `SELECT category, SUM(price) FROM addexpense GROUP BY category where email = '${req.myemail}'`;
-  var sql = `SELECT category, SUM(price) FROM addexpense WHERE email = '${req.myemail}' GROUP BY category`;
+  var sql = `SELECT category, SUM(price) FROM addexpense WHERE email = '${req.myemail}'AND '${month}' AND '${year}' GROUP BY category`;
 
 
   con.connect(function (err) {
