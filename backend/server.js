@@ -17,9 +17,9 @@ const protect = require("./Middleware/Protect");
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "root",
+  password: "rootroot",
   database: "expense",
-  port: 3307,
+  port: 3306,
 });
 
 
@@ -158,11 +158,15 @@ app.get("/user/categoryexpense", protect, (req, res) => {
     if (err) throw err;
 
     con.query(sql, function (err, result) {
+
+      console.log("we are in error section")
       if (result.length == 0) {
         res.status(201).json({
           categoryexpense: 0,
         });
       } else {
+
+        console.log("category expense",result)
         Number.parseInt(result);
         res.status(201).json({
           categoryexpense: result,
@@ -191,3 +195,8 @@ app.get("/my/tracker", protect, (req, res) => {
 app.listen(PORT, () => {
   console.log("the server is running on port ", PORT);
 });
+
+
+
+
+
