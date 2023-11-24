@@ -1,14 +1,11 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
-//import express from "express";
+
 const app = express();
 const PORT = 805;
-const mysql = require("mysql2"); //to put the install mysql functionalities in a variable
-//import mysql from "mysql2";
+const mysql = require("mysql2");
 app.use(express.json());
 var cors = require("cors");
-//import cors from "cors";
-//const { default: AddExpense } = require('../frontend/src/Components/AddExpense');
 
 app.use(cors());
 const generateToken = require("./config/generateToken");
@@ -17,11 +14,10 @@ const protect = require("./Middleware/Protect");
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "rootroot",
+  password: "root",
   database: "expense",
-  port: 3306,
+  port: 3307,
 });
-
 
 app.post("/user/signup", (req, res) => {
   console.log("i am inside server");
@@ -42,12 +38,6 @@ app.post("/user/signup", (req, res) => {
         message: "Successful",
       });
     });
-
-    //   else{
-    //     res.status(201).json({
-    //         message: "Unsuccessful"
-    //     })
-    //   }
   });
 });
 
@@ -87,7 +77,7 @@ app.post("/user/signin", (req, res) => {
 app.post("/user/addexpense", protect, (req, res) => {
   console.log("I am inside the server");
 
-  const { description, price, category, notes, date,month,year } = req.body;
+  const { description, price, category, notes, date, month, year } = req.body;
   var sq2 = `INSERT INTO addexpense (email,description,price,category,notes,date,month,year) VALUES("${req.myemail}","${description}", "${price}","${category}", "${notes}", "${date}", "${month}", "${year}")`;
 
   con.connect(function (err) {
@@ -106,8 +96,8 @@ app.post("/user/addexpense", protect, (req, res) => {
 });
 
 app.get("/user/getexpenses", protect, (req, res) => {
-  var {month,year} = req.query;
-  console.log(month,year);
+  var { month, year } = req.query;
+  console.log(month, year);
   var sql = `SELECT * from addexpense where email = "${req.myemail}" AND month = "${month}" AND year = "${year}"`;
 
   con.connect(function (err) {
@@ -122,7 +112,7 @@ app.get("/user/getexpenses", protect, (req, res) => {
 });
 
 app.get("/user/totalexpense", protect, (req, res) => {
-   var {month,year} = req.query;
+  var { month, year } = req.query;
 
   var sql = `SELECT price FROM addexpense where email = '${req.myemail}'AND '${month}' AND '${year}'`;
   con.connect(function (err) {
@@ -148,25 +138,21 @@ app.get("/user/totalexpense", protect, (req, res) => {
 });
 
 app.get("/user/categoryexpense", protect, (req, res) => {
-   var {month,year} = req.query;
+  var { month, year } = req.query;
 
- // var sql = `SELECT category, SUM(price) FROM addexpense GROUP BY category where email = '${req.myemail}'`;
   var sql = `SELECT category, SUM(price) FROM addexpense WHERE email = '${req.myemail}'AND '${month}' AND '${year}' GROUP BY category`;
-
 
   con.connect(function (err) {
     if (err) throw err;
 
     con.query(sql, function (err, result) {
-
-      console.log("we are in error section")
+      console.log("we are in error section");
       if (result.length == 0) {
         res.status(201).json({
           categoryexpense: 0,
         });
       } else {
-
-        console.log("category expense",result)
+        console.log("category expense", result);
         Number.parseInt(result);
         res.status(201).json({
           categoryexpense: result,
@@ -195,8 +181,3 @@ app.get("/my/tracker", protect, (req, res) => {
 app.listen(PORT, () => {
   console.log("the server is running on port ", PORT);
 });
-
-
-
-
-
